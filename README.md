@@ -1,4 +1,4 @@
-# Multi-Scale Context Aggregation by Dilated Convolutions in Keras
+# Transfer Learning in Dilated Convolutional Network in Keras
 This repository holds a Keras porting of the [ICLR 2016 paper](https://arxiv.org/abs/1511.07122) by Yu and Koltun and my proposed student teacher algorithm. 
 
 ## How to use
