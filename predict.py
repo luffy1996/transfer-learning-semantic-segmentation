@@ -5,6 +5,9 @@ from datasets import CONFIG
 from utils import interp_map
 import matplotlib.pyplot as plt
 from scipy.misc import imsave
+from keras.utils import plot_model
+from keras.layers import Permute, Reshape, Activation
+from keras.models import Model
 
 # predict function, mostly reported as it was in the original repo
 def predict(image, model, ds):
@@ -16,13 +19,13 @@ def predict(image, model, ds):
     print 'input dims ' , input_dims
     batch_size, num_channels, input_height, input_width = input_dims
     model_in = np.zeros(input_dims, dtype=np.float32)
-    print '############################################'
-    print '############################################'
-    print '############################################'
-    print model_in.shape
-    print input_height , input_width
-    print '############################################'
-    print '############################################'
+    # print '############################################'
+    # print '############################################'
+    # print '############################################'
+    # print model_in.shape
+    # print input_height , input_width
+    # print '############################################'
+    # print '############################################'
     image_size = image.shape
     output_height = input_height - 2 * conv_margin
     output_width = input_width - 2 * conv_margin
@@ -52,11 +55,11 @@ def predict(image, model, ds):
             tile = cv2.copyMakeBorder(tile, margin[0], margin[1],
                                       margin[2], margin[3],
                                       cv2.BORDER_REFLECT_101)
-            model_in[0] = tile.transpose([2, 0, 1])
+            model_in[0] = tile.transpose([2, 0, 1]) # This is done to bring channels first
             # print type(model_in) , model_in.shape
             # predicted_model = model.predict(model_in)
             # print (np.asarray(predicted_model)).shape
-            prob = model.predict(model_in)[0]
+            prob = model.predict(model_in*0.9)[0]
             print len(prob),len(prob[0]) , len(prob[0][0])
             col_prediction.append(prob)
             # print h,col_prediction
@@ -66,7 +69,12 @@ def predict(image, model, ds):
         col_prediction = np.concatenate(col_prediction, axis=2)
         row_prediction.append(col_prediction)
     prob = np.concatenate(row_prediction, axis=1)
-    print 'check', prob.shape 
+    print prob.shape
+    print 'check', prob.shape
+    # exit() 
+    print type(image_size)
+    print type(image_size[1]), image_size[0]
+    # exit()
     if CONFIG[ds]['zoom'] > 1:
         prob = interp_map(prob, CONFIG[ds]['zoom'], image_size[1], image_size[0])
 
@@ -77,16 +85,18 @@ def predict(image, model, ds):
     print 'size dekh lo bhai' , color_image.shape
     return color_image
 
+ds = 'voc12'  # choose between cityscapes, kitti, camvid, voc12
 
 if __name__ == '__main__':
-
-    ds = 'voc12'  # choose between cityscapes, kitti, camvid, voc12
+    print CONFIG[ds]['mean_pixel']
+    # exit()
 
     # get the model
     model = DilationNet(dataset=ds)
     model.compile(optimizer='sgd', loss='categorical_crossentropy')
     model.summary()
-
+    # plot_model(model,show_shapes=True,show_layer_names=True ,to_file='/home/zoro/Desktop/realmodel.png')
+    # exit()
     # read and predict a image
     im = cv2.imread(CONFIG[ds]['test_image'])
     print im.shape
